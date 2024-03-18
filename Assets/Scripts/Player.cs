@@ -343,12 +343,14 @@ public class Player : MonoBehaviour
         {  
             PerformAttack(_damageStrong);
             _anim.SetTrigger("Parry_Attack");
+            Debug.Log("Parry acertado!");
         }else
         {
             _anim.SetBool("isParry", false);
+            Debug.Log("Parry fallado!");
         }
 
-        Debug.Log("Melee Parry and Special Attack!");
+
     }
 
     //Gizmos
