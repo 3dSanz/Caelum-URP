@@ -31,6 +31,8 @@ public class Player : MonoBehaviour
     public float _damageStrong = 3f;
     public LayerMask enemyLayer;
     public float attackRadius = 1.5f;
+    [SerializeField] private bool _lookUp;
+    [SerializeField] private bool _lookDown;
     [SerializeField] private float downwardAttackForce = 15;
     [SerializeField] private Transform _attackForward;
 
@@ -40,6 +42,7 @@ public class Player : MonoBehaviour
     public float dashSpeed = 10f;
     private Vector3 dashStartPos;
     private bool isDashing;
+    [SerializeField] private bool _lookDash;
 
     //Parry
     public float parryCooldown = 1f;
@@ -64,8 +67,6 @@ public class Player : MonoBehaviour
 
         //Movimiento
         Movimiento();
-
-        
         
         //Salto
         Salto();
@@ -73,22 +74,81 @@ public class Player : MonoBehaviour
 
 
         //Ataque
-        if (Input.GetButtonDown("Fire1"))
+        if (_isGrounded == true && Input.GetButtonDown("Fire1") && _lookUp == false)
         {
             PerformAttack(_damage);
             _anim.SetBool("isAttacking",true);
+            Debug.Log("Ataque Normal");
         }else{
             _anim.SetBool("isAttacking",false);
         }
 
-        //Ataque hacia abajo
-        if (Input.GetButtonDown("Fire1") && Input.GetKeyDown(KeyCode.S))
+        //Ataque hacia arriba
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            _lookUp = true;
+        }else if(Input.GetKeyUp(KeyCode.W))
+        {
+            _lookUp = false;
+        }
+        /*//Ataque hacia arriba Suelo
+        if (_isGrounded == true && _lookUp == true && Input.GetButtonDown("Fire1"))
+        {
+            PerformAttack(_damage);
+            //_anim.SetBool("upAttack", true);
+        }else
+        {
+            //_anim.SetBool("upAttack", false);
+        }
+        //Ataque hacia arriba Aire
+        if (_isGrounded == false && _lookUp == true && Input.GetButtonDown("Fire1"))
+        {
+            PerformAttack(_damage);
+            //_anim.SetBool("upAttack", true);
+        }else
+        {
+            //_anim.SetBool("upAttack", false);
+        }*/
+        if (_lookUp == true && Input.GetButtonDown("Fire1"))
+        {
+            PerformAttack(_damage);
+            //_anim.SetBool("upAttack", true);
+            Debug.Log("Ataque hacia arriba");
+        }else
+        {
+            //_anim.SetBool("upAttack", false);
+        }
+
+
+        //Ataque hacia abajo aire
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            _lookDown = true;
+        }else if(Input.GetKeyUp(KeyCode.S))
+        {
+            _lookDown = false;
+        }
+        if (_isGrounded == false && _lookDown == true && Input.GetButtonDown("Fire1"))
         {
             PerformDownwardAttack();
+            //_anim.SetBool("downAttack", true);
+            Debug.Log("Ataque Hacia Abajo en salto");
+        }else
+        {
+            //_anim.SetBool("upAttack", false);
         }
 
         //Dash
-        if (Input.GetKeyDown(KeyCode.Z))
+        //Mirar Dash
+        if (Input.GetButtonDown("Horizontal"))
+        {
+            _lookDash = true;
+        }else if(Input.GetButtonUp("Horizontal"))
+        {
+            _lookDash = false;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Z) && _lookDash == true)
         {
             PerformDash();
             
@@ -120,14 +180,38 @@ public class Player : MonoBehaviour
         _anim.SetFloat("VelX",0);
         _anim.SetFloat("VelZ", _direccion.magnitude);
 
-        if(_direccion != Vector3.zero)
+        /*if(_direccion != Vector3.zero)
         {
             float _targetAngle = Mathf.Atan2(_direccion.x, _direccion.z) * Mathf.Rad2Deg + _camera.eulerAngles.y;
             float _smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0,_smoothAngle,0);
             Vector3 _moveDirection = Quaternion.Euler(0, _targetAngle, 0) * Vector3.forward;
             _controller.Move(_moveDirection.normalized * _vel * Time.deltaTime);
+        }*/
+
+        if (_direccion != Vector3.zero)
+        {
+        // Calcula el angulo objetivo basado en la direccion de entrada
+        float _targetAngle = Mathf.Atan2(_direccion.x, _direccion.z) * Mathf.Rad2Deg + _camera.eulerAngles.y;
+
+        // Suaviza el angulo de rotacion
+        float _smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+
+        // Aplica la rotacion solo en el eje Y
+        transform.rotation = Quaternion.Euler(0, _smoothAngle, 0);
+
+        // Calcula la direccion de movimiento en el plano XZ (sin componente Z)
+        Vector3 _moveDirection = Quaternion.Euler(0, _targetAngle, 0) * Vector3.forward;
+        _moveDirection.y = 0; // Bloquea el movimiento en el eje Z
+
+        // Normaliza y aplica la velocidad de movimiento
+        _controller.Move(_moveDirection.normalized * _vel * Time.deltaTime);
         }
+
+
+        /*Vector3 movimiento = -transform.right * _horizontal * _vel * Time.deltaTime;
+
+        _controller.Move(movimiento);*/
     }
 
 
@@ -158,7 +242,6 @@ public class Player : MonoBehaviour
         {
             //enemy.GetComponent<Enemy>().TakeDamage(_inputDamage);
         }
-        Debug.Log("Atacado");
 
         /*Collider[] projectiles = Physics.OverlapSphere(transform.position, attackRadius, bulletLayer);
         foreach (Collider projectile in projectiles)
@@ -178,7 +261,6 @@ public class Player : MonoBehaviour
             //enemy.GetComponent<Enemy>().TakeDamage(_damage);
         }
         _controller.Move(Vector3.up * downwardAttackForce * Time.deltaTime);
-        Debug.Log("Atacado Abajo");
     }
 
     void PerformDash()
@@ -200,7 +282,7 @@ public class Player : MonoBehaviour
 
     void DashMovement()
     {
-        // Calcular la posicion final del dash
+       /* // Calcular la posicion final del dash
         Vector3 finalPosition = dashStartPos + transform.forward * dashDistance;
 
         // Movimiento hacia la posicion final del dash
@@ -211,10 +293,27 @@ public class Player : MonoBehaviour
         {
             // Resetea el flag y para el dash
             isDashing = false;
+        }*/
+
+        // Calcular la posicion final del dash
+        Vector3 finalPosition = dashStartPos + transform.forward * dashDistance;
+
+        // Movimiento hacia la posicion final del dash (solo en el plano XZ)
+        Vector3 dashMove = transform.forward * dashSpeed * Time.deltaTime;
+        dashMove.y = 0; // Bloquear el movimiento en el eje Z
+
+        _controller.Move(dashMove);
+
+        // Comprueba si se ha realizado el dash
+        if (Vector3.Distance(transform.position, dashStartPos) >= dashDistance)
+        {
+            // Resetea el flag y para el dash
+            isDashing = false;
         }
 
     }
 
+    //Parry
     IEnumerator ParryCooldown()
     {
         canParry = false;
@@ -252,6 +351,7 @@ public class Player : MonoBehaviour
         Debug.Log("Melee Parry and Special Attack!");
     }
 
+    //Gizmos
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

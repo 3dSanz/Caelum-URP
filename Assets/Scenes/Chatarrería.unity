@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18286517, g: 0.22856486, b: 0.30694538, a: 1}
+  m_IndirectSpecularColor: {r: 0.18286178, g: 0.22856224, b: 0.30694902, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -41874,11 +41874,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   attackRadius: 1.02
+  _lookUp: 0
+  _lookDown: 0
   downwardAttackForce: 5
   _attackForward: {fileID: 875525225}
   dashDistance: 5
   dashDuration: 0.5
   dashSpeed: 10
+  _lookDash: 0
   parryCooldown: 1
   meleeRange: 2
   meleeLayer:
