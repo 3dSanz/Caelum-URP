@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     //Movimiento
     private float _horizontal;
     private float _vertical;
-    [SerializeField] private float _vel = 5;
+    [SerializeField] private float _vel = 9;
     [SerializeField] private float turnSmoothTime = 0.1f;
     private float turnSmoothVelocity;
 
@@ -37,7 +37,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Transform _attackForward;
 
     //Dash
-    public float dashDistance = 5f;
+    public float dashDistance = 10f;
     public float dashDuration = 0.5f;
     public float dashSpeed = 10f;
     private Vector3 dashStartPos;
